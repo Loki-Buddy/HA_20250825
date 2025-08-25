@@ -1,0 +1,38 @@
+name: Test und Deployment für die Hausaufgabe
+
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v5
+
+      - name: setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: install dependencies
+        run: npm install
+
+      - name: test
+        run: npm test
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v5
+
+      - name: ssh setup
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{secrets.SSH_PRIVATE_KEY}}" > ~/.ssh/lokiiskey
+          chmod 400 ~/.ssh/lokiiskey
+          ssh-keyscan -H ${{secrets.EC2_IP}} >> ~/.ssh/known_hosts
+
+      - name: kopiere mehrwertsteuer.js zu ec2 Maschine
+        run: scp -i ~/.ssh/lokiiskey mehrwertsteuer.js ubuntu@${{secrets.EC2_IP}}:/home/ubuntu

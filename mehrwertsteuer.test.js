@@ -18,5 +18,5 @@ test("Bei 100 Euro Netto mit 19% sollen 119 Euro Brutto ausgegeben werden", () =
 
 // Hier habe ich das toBe absichtlich verfälscht
 test("Bei 50 Euro Netto mit 7% sollen 53,5 Euro Brutto ausgegeben werden", () => {
-    expect(brutto(50, 0.07)).toBe(53);
+    expect(brutto(50, 0.07)).toBe(53.5);
 });

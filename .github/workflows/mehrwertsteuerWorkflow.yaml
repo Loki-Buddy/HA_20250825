@@ -6,6 +6,14 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
+      - name: Post a Message in a Channel
+        uses: slackapi/slack-github-action@v2.1.1
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: INCOMING_WEBHOOK
+          payload: |
+            text: "🚀 Pipeline wurde soeben gestartet. Pipeline: ${{github.workflow}}"
+
       - name: checkout
         uses: actions/checkout@v5
 
@@ -19,6 +27,30 @@ jobs:
 
       - name: test
         run: npm test
+      
+      - name: coverage upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: ./coverage
+
+      - name: Slack Nachricht bei Erfolg
+        if: ${{success()}}
+        uses: slackapi/slack-github-action@v2.1.1
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            text: "✅ Test Job erfolgreich durchgelaufen - Jetzt wird deployt"
+
+      - name: Slack Nachricht bei Nicht Erfolg
+        if: ${{failure()}}
+        uses: slackapi/slack-github-action@v2.1.1
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            text: "❌ Test Job fehlgeschalgen - Bitte sofort überprüfen" 
 
   deploy:
     needs: test
